@@ -4,7 +4,7 @@ description: "Train a spancat model on the `dataset` defined in `project.yml`"
 vars:
   config: "config_trf" # config_tok2vec, config_trf
   dataset: "mitrea_ttack" # healthsea, toxic, genia
-  suggester: "span_finder" # ngram, span_finder
+  suggester: "ngram" # ngram, span_finder
 
   train: "train"
   dev: "dev"
