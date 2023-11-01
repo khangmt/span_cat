@@ -1,0 +1,17 @@
+preprocess_data:
+  cmd: python -m spacy run preprocess_data
+  script:
+    - python scripts/preprocessing/preprocess.py assets/data.csv data/mitrea_ttack_train.spacy
+      data/mitrea_ttack_dev.spacy 0.25 sc
+  deps:
+    - path: assets/data.csv
+      md5: da2aed575e96ee5b435f35304c3c273c
+    - path: scripts/preprocessing/preprocess.py
+      md5: 9a07ffdc4cf62998f3c88e4ef6b7f54b
+  outs:
+    - path: data/mitrea_ttack_train.spacy
+      md5: 966112d850a575deacfaed19de492c33
+    - path: data/mitrea_ttack_dev.spacy
+      md5: 11135a8c22e44aa252fa801c705b1cb4
+  spacy_version: 3.5.4
+  spacy_git_version: 7a2833bf2
