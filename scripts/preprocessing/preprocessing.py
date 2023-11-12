@@ -10,7 +10,8 @@ from wasabi import table
 
 from pathlib import Path
 import typer
-ACTOR = 0
+OTHER = 0
+
 COMMUNICATION = 1
 DATA = 2
 DIRECTORY = 3
@@ -22,9 +23,9 @@ COMPONENT = 8
 REGISTRY = 9
 USER = 10
 VULNERABILITY = 11
-OTHER = 12
+ACTOR = 12
 id2label = {
-    0: "ACTOR",
+    0: "OTHER",
     1: "COMMUNICATION",
     2: "DATA",
     3: "DIRECTORY",
@@ -36,7 +37,7 @@ id2label = {
     9: "REGISTRY",
     10: "USER",
     11: "VULNERABILITY",
-    12: "OTHER",
+    12: "ACTOR",
 }
 msg = Printer()
 def _character_offset_to_token(doc: Doc, start:int, end:int) -> list:
@@ -60,6 +61,7 @@ def main(
     df = pd.read_csv(spans_file)
     doc_dict = {}
     for index, row in df.iterrows():
+        ents = []
         label = id2label[row["label"]]
         span = row["phrase"]
         start = row["start"]
@@ -68,14 +70,13 @@ def main(
         doc_id = row["hash_id"]
         if doc_id not in doc_dict:
             doc_dict[doc_id] = nlp(sentence)
-            doc_dict[doc_id].spans[span_key] = []
-        
-        doc = doc_dict[doc_id]
-        tokens = _character_offset_to_token(doc, start, end)
-        if not tokens:
-            continue
-        span_object = Span(doc, tokens[0], tokens[-1]+1, label=label)
-        doc.spans[span_key].append(span_object)
+
+        span = doc_dict[doc_id].char_span(start, end, label=label)
+        if span is None:
+            print("Skipping entity")
+        else:
+            ents.append(span)
+        doc_dict[doc_id].ents = ents
     
     docs = list(doc_dict.values())
     train = []

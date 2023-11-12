@@ -1,19 +1,17 @@
-title: "My Span cat project"
-description: "Train a spancat model on the `dataset` defined in `project.yml`"
+title: "My ner project"
+description: "Train a ner model on the `dataset` defined in `project.yml`"
 # Variables can be referenced across the project.yml using ${vars.var_name}
 vars:
-  config: "config_trf" # config_tok2vec, config_trf
+  config: "config" # config_tok2vec, config_trf
   dataset: "mitrea_ttack" # healthsea, toxic, genia
-  suggester: "ngram" # ngram, span_finder
 
   train: "train"
   dev: "dev"
-  spans_key: "sc"
 
   gpu_id: 0
   eval_split: 0.25
 
-  spancat_model: "training/spancat/${vars.dataset}/${vars.config}_${vars.suggester}/model-best"
+  ner_model: "training/ner/${vars.dataset}/${vars.config}/model-best"
 
 # These are the directories that the project needs. The project CLI will make
 # sure that they always exist.
@@ -33,9 +31,9 @@ assets:
 workflows:
   preprocess:
     - preprocess_data
-  spancat:
-    - train_spancat
-    - evaluate_spancat
+  ner:
+    - train_ner
+    - evaluate_ner
 
 # Project commands, specified in a style similar to CI config files (e.g. Azure
 # pipelines). The name is the command name that lets you trigger the command
@@ -50,7 +48,7 @@ commands:
   - name: "preprocess_data"
     help: "Format my data annotations into .spaCy training format"
     script:
-      - "python scripts/preprocessing/preprocess.py assets/data.csv data/${vars.dataset}_${vars.train}.spacy data/${vars.dataset}_${vars.dev}.spacy ${vars.eval_split} ${vars.spans_key}"
+      - "python scripts/preprocessing/preprocess.py assets/data.csv data/${vars.dataset}_${vars.train}.spacy data/${vars.dataset}_${vars.dev}.spacy ${vars.eval_split}"
     deps:
       - "assets/data.csv"
       - "scripts/preprocessing/preprocess.py"
@@ -59,27 +57,26 @@ commands:
       - "data/${vars.dataset}_${vars.dev}.spacy"
 
 
-  - name: "train_spancat"
-    help: "Train a spancat model on the `dataset` defined in `project.yml`"
+  - name: "train_ner"
+    help: "Train a ner model on the `dataset` defined in `project.yml`"
     script:
-      - "python -m spacy train configs/${vars.suggester}/${vars.config}.cfg --output training/spancat/${vars.dataset}/${vars.config}_${vars.suggester}/ --paths.train data/${vars.dataset}_${vars.train}.spacy --paths.dev data/${vars.dataset}_${vars.dev}.spacy --gpu-id ${vars.gpu_id} --vars.spans_key ${vars.spans_key}"
+      - "python -m spacy train configs/${vars.suggester}/${vars.config}.cfg --output training/ner/${vars.dataset}/${vars.config}/ --paths.train data/${vars.dataset}_${vars.train}.spacy --paths.dev data/${vars.dataset}_${vars.dev}.spacy --gpu-id ${vars.gpu_id}"
     deps:
       - "configs/${vars.suggester}/${vars.config}.cfg"
       - "data/${vars.dataset}_${vars.train}.spacy"
       - "data/${vars.dataset}_${vars.dev}.spacy"
     outputs:
-      - "${vars.spancat_model}"
+      - "${vars.ner_model}"
 
-  - name: "evaluate_spancat"
-    help: "Evaluate a trained spancat model  on the `dataset` defined in `project.yml`"
+  - name: "evaluate_ner"
+    help: "Evaluate a trained ner model  on the `dataset` defined in `project.yml`"
     script:
-      - "python -m spacy evaluate ${vars.spancat_model} data/${vars.dataset}_${vars.dev}.spacy --output metrics/spancat_${vars.dataset}_${vars.config}_${vars.suggester}.json --gpu-id ${vars.gpu_id}"
-      - "python scripts/suggester_evaluation.py ${vars.spans_key} ${vars.spancat_model} data/${vars.dataset}_${vars.dev}.spacy"
+      - "python -m spacy evaluate ${vars.ner_model} data/${vars.dataset}_${vars.dev}.spacy --output metrics/ner_${vars.dataset}_${vars.config}.json --gpu-id ${vars.gpu_id}"
     deps:
-      - "${vars.spancat_model}"
+      - "${vars.ner_model}"
       - "data/${vars.dataset}_${vars.dev}.spacy"
     outputs:
-      - metrics/spancat_${vars.dataset}_${vars.config}_${vars.suggester}.json
+      - metrics/ner_${vars.dataset}_${vars.config}.json
 
   - name: "reset"
     help: "Reset the project to its original state and delete all training process"
