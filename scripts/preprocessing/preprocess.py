@@ -53,7 +53,6 @@ def main(
     train_file: Path,
     dev_file: Path,
     eval_split: float,
-    span_key: str,
 ):
     nlp = spacy.blank("en")
     msg.info("Processing data")
