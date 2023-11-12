@@ -1,4 +1,4 @@
-title: "My ner project"
+title: "My Span cat project"
 description: "Train a ner model on the `dataset` defined in `project.yml`"
 # Variables can be referenced across the project.yml using ${vars.var_name}
 vars:
@@ -60,9 +60,9 @@ commands:
   - name: "train_ner"
     help: "Train a ner model on the `dataset` defined in `project.yml`"
     script:
-      - "python -m spacy train configs/${vars.suggester}/${vars.config}.cfg --output training/ner/${vars.dataset}/${vars.config}/ --paths.train data/${vars.dataset}_${vars.train}.spacy --paths.dev data/${vars.dataset}_${vars.dev}.spacy --gpu-id ${vars.gpu_id}"
+      - "python -m spacy train configs/ner/${vars.config}.cfg --output training/ner/${vars.dataset}/${vars.config}/ --paths.train data/${vars.dataset}_${vars.train}.spacy --paths.dev data/${vars.dataset}_${vars.dev}.spacy --gpu-id ${vars.gpu_id}"
     deps:
-      - "configs/${vars.suggester}/${vars.config}.cfg"
+      - "configs/ner/${vars.config}.cfg"
       - "data/${vars.dataset}_${vars.train}.spacy"
       - "data/${vars.dataset}_${vars.dev}.spacy"
     outputs:
