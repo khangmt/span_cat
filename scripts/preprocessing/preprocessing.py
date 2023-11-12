@@ -10,34 +10,33 @@ from wasabi import table
 
 from pathlib import Path
 import typer
-OTHER = 0
-
-COMMUNICATION = 1
-DATA = 2
-DIRECTORY = 3
-DLL = 4
-ENCRYPTION = 5
-FUNCTION = 6
-NETWORK = 7
-COMPONENT = 8
-REGISTRY = 9
-USER = 10
-VULNERABILITY = 11
-ACTOR = 12
+ABSTAIN = -1
+label2id = {
+    "OTHER": 0,
+    "DATA": 1,
+    "DIRECTORY": 2,
+    "ENCRYPTION": 3,
+    "FUNCTION": 4,
+    "NETWORK": 5,
+    "COMPONENT": 6,
+    "REGISTRY": 7,
+    "USER": 8,
+    "VULNERABILITY": 9,
+    "ACTOR": 10,
+    "ABSTAIN": -1
+}
 id2label = {
     0: "OTHER",
-    1: "COMMUNICATION",
-    2: "DATA",
-    3: "DIRECTORY",
-    4: "DLL",
-    5: "ENCRYPTION",
-    6: "FUNCTION",
-    7: "NETWORK",
-    8: "COMPONENT",
-    9: "REGISTRY",
-    10: "USER",
-    11: "VULNERABILITY",
-    12: "ACTOR",
+    1: "DATA",
+    2: "DIRECTORY",
+    3: "ENCRYPTION",
+    4: "FUNCTION",
+    5: "NETWORK",
+    6: "COMPONENT",
+    7: "REGISTRY",
+    8: "USER",
+    9: "VULNERABILITY",
+    10: "ACTOR"
 }
 msg = Printer()
 def _character_offset_to_token(doc: Doc, start:int, end:int) -> list:
