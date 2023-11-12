@@ -85,14 +85,6 @@ def main(
     train = docs[split:]
     dev = docs[:split]
 
-    # Get max span length from train
-    max_span_length = 0
-    for doc in train:
-        for span in doc.spans[span_key]:
-            span_length = span.end - span.start
-            if span_length > max_span_length:
-                max_span_length = span_length
-
     # Save to disk
     docbin = DocBin(docs=train, store_user_data=True)
     docbin.to_disk(train_file)
