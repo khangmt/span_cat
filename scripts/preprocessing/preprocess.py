@@ -43,10 +43,18 @@ def _character_offset_to_token(doc: Doc, start:int, end:int) -> list:
         token_list = []
         for token in doc:
             if start == token.idx:
-                token_list.append(token.i)
-            elif token.idx > start and token.idx <= end:
-                token_list.append(token.i)
+                token_list.append(token)
+            elif token.idx > start and token.idx < end:
+                token_list.append(token)
         return token_list
+def _token_offset_to_character(doc: Doc, start, end) -> list:
+        char_list = []
+        for token in doc:
+            if start.i == token.i:
+                char_list.append(token.idx)
+            if token.i == end.i:
+                char_list.append(token.idx + len(token.text))
+        return char_list
 
 def main(
     spans_file: Path,
@@ -54,27 +62,37 @@ def main(
     dev_file: Path,
     eval_split: float,
 ):
-    nlp = spacy.blank("en")
-    msg.info("Processing data")
-    df = pd.read_csv(spans_file)
+    df = pd.read_csv(spans_file, encoding="utf-8")
     doc_dict = {}
+    # nlp = spacy.load('en_core_web_trf')
+    nlp = spacy.blank('en')
+    # nlp.tokenizer = custom_tokenizer(nlp)
     for index, row in df.iterrows():
         ents = []
         label = id2label[row["label"]]
-        span = row["phrase"]
+        phrase = row["phrase"]
         start = row["start"]
         end = row["end"]
         sentence = row["sentence"]
         doc_id = row["hash_id"]
-        if doc_id not in doc_dict:
-            doc_dict[doc_id] = nlp(sentence)
-
-        span = doc_dict[doc_id].char_span(start, end, label=label)
+        if sentence[-1]==".":
+            sentence = sentence[:-1]
+        if sentence not in doc_dict:
+            doc_dict[sentence] = nlp(sentence)
+        # doc_dict[sentence]["entities"].append((start, end, label))
+        token_ids = _character_offset_to_token(doc_dict[sentence], start, end)
+        if len(token_ids) == 0:
+            print(phrase)
+            print("Skipping entity")
+            continue
+        new_start, new_end = _token_offset_to_character(doc_dict[sentence], token_ids[0], token_ids[-1])
+        span = doc_dict[sentence].char_span(new_start, new_end, label=label,alignment_mode='strict')
         if span is None:
+            print(sentence)
             print("Skipping entity")
         else:
             ents.append(span)
-        doc_dict[doc_id].ents = ents
+        doc_dict[sentence].ents = ents
     
     docs = list(doc_dict.values())
     train = []
